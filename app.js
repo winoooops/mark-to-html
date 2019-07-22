@@ -2,6 +2,7 @@ const express = require('express')
 const marked = require('marked')
 const bodyParser = require('body-parser')
 const exphbs = require('express-handlebars')
+const fs = require('fs')
 
 const app = express()
 const PORT = 3000;
@@ -17,8 +18,11 @@ app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
 
 app.get('/', (req, res) => {
+  const file = fs.readFileSync('./public/sample.hd')
+
   res.render('index', {
-    title: 'Week One'
+    title: 'Week One',
+    file: file.toString()
   })
 })
 
