@@ -1,0 +1,16 @@
+h1{
+  color: blue
+}
+
+.container {
+  display: flex;
+  flex-direction: row
+}
+
+.marked{
+  flex:1
+}
+
+.html{
+  flex: 2
+}
