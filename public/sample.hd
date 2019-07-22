@@ -1,0 +1,688 @@
+# Intermedia Algorithm Scripting
+#code/javascript/FreeCodeComp
+#code/javascript
+### Sum in a range 
+#code/javascript/spreadOperator
+```javascript
+// 方法一：Compare to the last one
+function sumAll(arr) {
+  if(arr[0] > arr[1]){
+    let s = arr[0];
+    arr[0] = arr[1];
+    arr[1] = s;
+  }
+  let sum = 0;
+  let i = arr[0];
+  while(i <= arr[1]){
+    sum = sum + i;
+    i++;
+  }
+  return sum;
+}
+
+// 方法2: use array.reduce
+function sumAll(arr) {
+  if(arr[0] > arr[1]){
+    let s = arr[0];
+    arr[0] = arr[1];
+    arr[1] = s;
+  }
+  let newArr = arr.slice();
+  let first = newArr[0];
+  let last = newArr[1];
+  let i = 1;
+  while(first+i < last){
+    newArr.push(first+i);
+    i++;
+  }
+  // return newArr;
+  return newArr.reduce( (a,b) => a+b );
+}
+// 方法3: Arithmetic Progression summing formula
+function sumAll(arr) {
+  if(arr[0] > arr[1]){
+    let s = arr[0];
+    arr[0] = arr[1];
+    arr[1] = s;
+  }
+  let first = arr[0];
+  let last = arr[1];
+
+  let sum = (last - first + 1) * (first + last)/2;
+  return sum;
+
+}
+
+// 方法4： Using spread operator
+function sumAll(arr) {
+  let sum = 0;
+  for(i = Math.min(...arr); i <= Math.max(...arr);  i++ ){
+    sum = sum + i;
+  }
+  return sum;
+}
+
+
+
+
+console.log(sumAll([4, 1])); //return 10(1+2+3+4)
+```
+- - - -
+## # Diff Two Arrays
+Compare two arrays and return a new array with any items only found in one of the two given arrays, but not both. In other words, return the symmetric difference of the two arrays.
+#code/javascript/array/includes
+#code/javascript/spreadOperator
+```javascript
+/***********************************
+use array.indexOf()
+***********************************/ 
+function checker(mother, target){
+  return mother.filter(function(item){
+    return target.indexOf(item) == -1 ? true : false;
+  });
+}
+
+
+function diffArray(arr1, arr2) {
+  let first = checker(arr1,arr2);
+  let second = checker(arr2,arr1);
+  return first.concat(second);
+}
+// or I can write it in this way
+function checker(a,b){
+  return a.filter( (item) => b.indexOf(item) === -1 );
+}
+
+function diffArray(arr1, arr2) {
+  return [...checker(arr1,arr2),...checker(arr2,arr1)];
+}
+
+/***********************************
+use array.includes()
+***********************************/ 
+function diffArray(arr1, arr2) {
+  return arr1.filter( (item) => !arr2.includes(item)  )
+             .concat(arr2.filter( (data) =>!arr1.includes(data)));
+
+}
+console.log(diffArray([1, 2, 3, 5], [1, 2, 3, 4, 5]));
+```
+
+In this case `target.include(item) ` does the same thing as `target.indexOf(item) == -1 ? true : false`does.
+## Function.call()
+#code/javascript/function/call
+`function.call()`接受一个参数，使这个参数拥有前面函数的属性。就像是拥有一个object的prototype属性一样。
+```javascript
+function greet() {
+  var reply = [this.person, 'Is An Awesome', this.role].join(' ');
+  console.log(reply);
+}
+
+var i = {
+  person: 'Douglas Crockford', role: 'Javascript Developer'
+};
+/*******************************
+* 以上的就等于
+* 因为call的机制会删除掉用的reply和log属性，当由于有this的存在，this的值还能
+* 被保存。所以虽然函数在执行完之后就没有了greet的属性，当输出的结果仍相同
+********************************/
+var i = {
+	person: 'Douglas Crockford', role: 'Javascript Developer';
+	var reply = [this.person, 'Is An Awesome', this.role].join(' ');
+  console.log(reply);
+}
+greet.call(i); 
+// Douglas Crockford Is An Awesome Javascript Developer
+```
+## Arguments Object
+#code/javascript/object/arguments
+```javascript
+console.log(typeof arguments); // 'object'
+```
+The `arguments` object is an Array-like object corresponding to the arguments passed to a function.
+```javascript
+function func1(a, b, c) {
+  console.log(arguments[0]);
+  // expected output: 1
+
+  console.log(arguments[1]);
+  // expected output: 2
+
+  console.log(arguments[2]);
+  // expected output: 3
+}
+func1(1, 2, 3);
+```
+The arguments object is not an  [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) . It is similar to an Array, but does not have any Array properties except  [length](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments/length) . For example, it does not have the  [pop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/pop)  method. However it can be converted to a real Array:
+```javascript
+var args = Array.prototype.slice.call(arguments);
+var args = [].slice.call(arguments);
+
+// ES2015
+const args = Array.from(arguments);
+```
+### Seeking and destroy
+#code/javascript/array
+#code/javascript/object/prototype
+#code/javascript/function/call
+```javascript
+function destroyer(arr) {
+  let target = Array.prototype.slice.call(arguments).slice(1);
+	// I can also use Array.from(arguments).slice(1)
+  return arr.filter( (item) => !target.includes(item) );
+}
+console.log(destroyer([1, 2, 3, 1, 2, 3], 2, 3));
+
+destroyer([1, 2, 3, 1, 2, 3], 2, 3);
+```
+- - - -
+## Wherefore art thou
+#code/javascript/object/keys
+#code/javascript/array/filter
+#code/javascript/array/every
+```javascript
+//方法1:使用filter + for循环
+function whatIsInAName(collection, source) {
+  let srcKey = Object.keys(source);// return an array
+  // console.log(srcKey);
+  return collection.filter(function(item){
+    for(let i = 0; i < srcKey.length; i++){
+      let key = srcKey[i];
+      if( !item.hasOwnProperty(key) || item[key] !== source[key] ){
+        return false;
+      }
+    }
+    return true; // 如果把return true放在函数里面会造成之后的函数终止运行
+  });
+}
+// 方法2: 使用filter + every
+function whatIsInAName(collection, source) {
+  let srcKey = Object.keys(source);// return an array
+  // console.log(srcKey);
+  return collection.filter(function(item){
+    return srcKey.every( (key) => item.hasOwnProperty(key) && item[key] == source[key] );
+  });
+}
+
+let result = whatIsInAName([{ first: "Romeo", last: "Montague" }, { first: "Mercutio", last: null }, { first: "Tybalt", last: "Capulet" }], { last: "Capulet" });//{ first: "Tybalt", last: "Capulet" }
+```
+- - - -
+## Spinal Tap Case
+#code/javascript/regularExpression
+```javascript
+// using regex + replace
+function spinalCase(str) {
+  let sortStr = str.replace(/([a-z])([A-Z])/g,'$1 $2');
+  return sortStr.replace(/\s|_/g,'-').toLowerCase();
+}
+// using regex + split + join
+function spinalCase(str) {
+  return str.split(/\s|_|(?=[A-Z])/).join('-').toLowerCase();
+}
+
+
+console.log(spinalCase('ThisIs Spinal Tap'));//this-is-spinal-tap
+```
+- - - -
+## pig Latin
+#code/javascript/regularExpression
+#code/javascript/string/match
+#code/javascript/string/substring
+The `match()` method retrieves the matches when matching a **string** against a regular expression.
+```javascript
+/********************************************************
+Using regular expression 
+********************************************************/
+
+function translatePigLatin(str) {
+  let regex = /([aeiou])/gi;
+  if(str[0].match(regex)){
+    return str+'way';
+  }else if (!str.match(regex)){
+    return str+'ay';
+  }else{
+    let pinpoint = str.indexOf(str.match(regex)[0]);
+    return str.substring(pinpoint)+str.substring(0,pinpoint)+'ay';
+  }
+}
+
+
+/*******************************************************
+using vowel array, but will make 'cry' a infinite loop
+*******************************************************/
+
+function translatePigLatin(str) {
+  function pinpoint(index){
+    return ['a','e','i','o','u'].indexOf(str.charAt(index)) == - 1? pinpoint(index+1) : index ;
+  }
+  return str.substring( pinpoint(0) ).concat( pinpoint(0) == 0 ? 'w': str.substring(0, pinpoint(0)) ) + 'ay';
+}
+
+/*******************************************************
+using consonante as the condition
+*******************************************************/
+
+function translatePigLatin(str) {
+  let charArr = [];
+  function checker(char){
+    return !/([aeiou])/.test(char);
+  }
+  // if the first one is not consonant, plus "way"
+  if (!checker(str.charAt(0))){
+    return str + 'way';
+  }
+  charArr = str.split('');
+
+  // normal flow
+  for(let i = 0; i < charArr.length; i++ ){
+    if(checker(charArr[0])){
+      var target = charArr.shift();
+      charArr.push(target);
+    }
+  }
+  return charArr.join('')+'ay';
+}
+
+/*********************************************
+我自己的方法
+*********************************************/
+function piggy(str) {
+  let regex = /[aeiou]/gi;
+  let match = str.match(regex);
+  function vowCheck(){
+    return match? str.indexOf(match[0]): false;
+  }
+ // str.substring(false) == str
+    return str.substring(vowCheck()).concat( vowCheck() == 0? 'w':str.substring ( 0,vowCheck() ) )+ 'ay';
+ 
+}
+
+console.log(translatePigLatin("eight"));
+console.log(translatePigLatin("california"));//aliforniacay
+console.log(translatePigLatin("cry"));//cryay
+console.log(translatePigLatin("eight"));//eightway
+```
+- - - -
+## Search & Replace
+#code/javascript/regularExpression
+#code/javascript/array/includes
+#code/javascript/string/replace
+```javascript
+function myReplace(str, before, after) {
+  if(!str.includes(before)){
+    alert('Please double check your input');
+  }
+  let fake = after.charAt(0).toUpperCase()+after.slice(1);
+  return /^([A-Z])/.test(before)?  str.replace(before,fake) :   str.replace(before,after)     ;
+}
+
+myReplace("A quick brown fox jumped over the lazy dog", "jumped", "leaped");
+```
+#code/javascript/object/prototype
+#code/javascript/string/prototype
+#code/javascript/object/RegExp
+```javascript
+// a completely different approach
+// create a String prototype that I can use later
+String.prototype.capitalize = String.prototype.capitalize ||
+  function(){
+    return this[0].toUpperCase() + this.slice(1);
+  };
+// geting the caseState
+function getCase(str){
+  if( str == str.toUpperCase() ){
+    return 'uppercase';
+  }else if ( str == str.toLowerCase() ){
+    return 'lowercase';
+  }else if ( str == str.capitalize() ){
+    return 'capitalize';
+  }
+}
+// setting the caseState
+function setCase(str,state){
+  switch(state){
+    case 'uppercase': return str.toUpperCase();
+    case 'lowercase': return str.toLowerCase();
+    case 'capitalize': return str.capitalize();
+    default: return str;
+  }
+}
+
+function myReplace(str, before, after) {
+  // create a customized regular expression
+	let reg = new RegExp(before,'gi');
+  let caser = function(){
+    return setCase(after,getCase(before));// getting after text with the right caseState
+  }
+  return str.replace(reg,caser);
+}
+
+let result = myReplace("A quick brown fox JUMPED over the lazy dog", "JUMPED", "leaped");
+```
+- - - -
+## DNA Pairing
+#code/javascript/switch
+#code/javascript/object
+```javascript
+// 使用switch
+function pairCheck(char){
+  switch (char){
+    case 'A': return [char,'T'];
+    case 'T': return [char,'A'];
+    case 'C': return [char,'G'];
+    case 'G': return [char,'C'];
+  }
+}
+
+function pairElement(str) {
+  return str.split('').map(function(item) {
+    return pairCheck(item);
+  });
+}
+// 使用object的方法
+function pairElement(str) {
+	// 创建一个储存有配对组合的object  
+	let pair = {'A':'T','T':'A','C':'G','G':"C"};  
+	return str.split('').map(function(item) {
+	    return [item,pair[item]];
+	  });
+	}
+
+pairElement("GCG");
+```
+- - - -
+## Missing Letters
+```javascript
+/****************************
+使用slice与标准进行对比
+****************************/
+function fearNotLetter(str) {
+  const template = 'abcdefghijklmnopqrstuvwxyz';
+  let begin = template.indexOf(str.charAt(0));
+  let target = template.slice(begin,begin + str.length+1);
+  function pinpointer(){
+    let i = 0;
+    while( target.charAt(i) == str.charAt(i) ){
+      i++
+    };
+    return target.charAt(i);
+  }
+  return str == target ? undefined: pinpointer();
+}
+
+/****************************
+使用charCodeAt, fromCharCode
+****************************/
+function fearNotLetter(str) {
+  let i = 1;
+  while(i < str.length){
+    if (str.charCodeAt(i) !== str.charCodeAt(i-1)+1){
+      return String.fromCharCode(str.charCodeAt(i)-1);
+    }
+    i++;
+  }
+  return undefined;// 如果使用i+1的方式，则此无法正常显示
+}
+
+
+console.log(fearNotLetter("bcdf"));// e
+```
+- - - -
+## Sorted Union
+#code/javascript/spreadOperator
+```javascript
+// spread operator + indexOf()
+function uniteUnique(...arr) {
+  let myArr = [].concat(...arr);
+  let result = [];
+  for(let i = 0; i< myArr.length; i++){
+    if( myArr.indexOf(myArr[i]) == i){
+      result.push(myArr[i]);
+    }
+  }
+  return result;
+}
+
+//
+function uniteUnique(...arr) {
+  let myArr = [].concat(...arr);
+  // for loop can be written in filter as well
+  return myArr.filter(function(item,pos){
+    return myArr.indexOf(item) == pos;
+  });
+}
+
+let result = uniteUnique([1, 3, 2], [1, [5]], [2, [4]]);
+// [1, 3, 2, [5], [4]]
+```
+#code/javascript/object/set
+```javascript
+// spread Operator + Set object
+function uniteUnique(...arr) {
+  let myArr = [].concat(...arr);
+  let result = new Set(myArr);// create a unique set of elements in myArr
+  return result;
+}
+```
+- - - -
+## Convert HTML Entities 
+#code/javascript/regularExpression
+#code/javascript/object
+#code/javascript/object/RegExp
+```
+function replaceBox(str){
+  let and = new RegExp('&','gi');
+  let apos = new RegExp("'",'gi');
+  let quot = new RegExp('"','gi');
+  let left = new RegExp('<','gi');
+  let right = new RegExp('>','gi');
+
+
+  str = str.replace(and,'&amp;');
+  str = str.replace(apos,'&apos;');
+  str = str.replace(quot,'&quot;');
+  str = str.replace(left,'&lt;');
+  str = str.replace(right,'&gt;');
+  return str;
+}
+
+function convertHTML(str) {
+  // &colon;&rpar;
+  return replaceBox(str);
+}
+
+console.log(convertHTML("Dolce & Gabbana"));
+```
+#code/javascript/array/map
+#code/javascript/||
+```
+// reference object + regular expression
+function convertHTML(str) {
+  let ref = {'&':'&amp;', "\'":'&apos;', '"':'&quot;', '<':'&lt;', '>': '&gt;'};
+  for (let item in ref){
+    var reg = new RegExp(item,'gi');
+    str = str.replace(reg,ref[item]);
+  }
+  return str;
+}
+
+// Instead of regular expression, I use map()
+
+function convertHTML(str) {
+  let ref = {'&':'&amp;', '\'':'&apos;', '"':'&quot;', '<':'&lt;', '>': '&gt;'};
+  return str.split('').map( (item) => ref[item] || item).join('');
+}
+// if the elements before || exists, use them, if not, use the ones behind
+
+convertHTML("Dolce & Gabbana");
+```
+- - - -
+## Sum All Odd Fibonacci Numbers
+Given a positive integer num, return the sum of all odd Fibonacci numbers that are less than or equal to num.
+#code/javascript/function/recursive
+#code/javascript/array/reduce
+#code/javascript/array/filter	 
+```javascript
+// What a Fibonacci Number means by creating a recursive function
+function fibo(num){
+  if(num<2){
+    return 1;
+  }
+  return fibo(num-1)+fibo(num-2);
+}
+function sumFibs(k) {
+  // create a list of all fibo number
+  let i = 0;
+  let arr =[];
+  while( fibo(i)<=k ){
+    arr.push( fibo(i) );
+    i++;
+  }
+  return arr.filter( (item) => item%2!==0 ).reduce( (a,b) => a+b);
+}
+
+console.log(sumFibs(10)); //1+1+3+5 =10 
+```
+Using unshift() to change the first 2 elements of the array
+#code/javascript/array/unshift
+```javascript
+function sumFibs(k) {
+  if(k < 2){
+    return 1;
+  }
+  let arr = [1,1];
+  let next;
+  while( (next = arr[0]+arr[1]) <= k ){
+    arr.unshift(next);// arr[0] and arr[1] will be changing all the time
+  }
+  return arr.filter( item => item%2 !== 0 ).reduce((a,b)=>a+b);
+}
+```
+- - - -
+## Sum of Prime Numbers
+```javascript
+// Using for 
+function primeCheck(n){
+  for(let i = 1; i < n; i++ ){
+    if(i!== 1 && n%i===0){
+      return false;
+    }
+  }
+  return true;
+}
+
+function sumPrimes(num) {
+  let sum =0;
+  for(let i = 2; i <= num ; i++ ){
+    if( primeCheck(i) ){
+      sum += i
+    }
+  }
+  return sum;
+}
+console.log(sumPrimes(10)); // 2+3+5+7=17
+```
+Another way to check a prime number
+#code/javascript/bitwise
+![](&&&SFLOCALFILEPATH&&&Screen%20Shot%202018-09-10%20at%2010.31.05.png)
+```javascript
+// another way to check if a num is a prime number 
+function primeCheck(n){
+  let check = [];
+  let prime = [];
+  for(i=2; i<=n ; i++){
+    // if i is appearing for the first time, then it's a prime
+    if(!check[i]){
+      prime.push(i);
+      // store everything that can be divided by i
+      for(let j = i << 1; j <= n ; j+= i){
+        check[j] = true;
+      }
+    }
+  }
+  return prime;
+}
+```
+I can also check  prime number in this way:
+```javascript
+function primeCheck(n){
+	// this way below is better than my first one
+  for(let m = n-1; m>= Math.sqrt(n); m--){
+    if(n % m == 0){
+      return false;
+    }
+  }
+  return true;
+}
+
+function sumPrimes(num) {
+  let arr = Array.from({length:num+1},(v,k)=> k).slice(2);
+  return arr.filter( (num) => primeCheck(num) ).reduce( (a,b) => a+b);
+}
+// console.log(primeCheck(17));
+console.log(sumPrimes(10));
+```
+- - - -
+## Recursive function & function stack
+#code/javascript/function/recursive
+#code/javascript/function/stack
+```javascript
+function foo(i) {
+  if (i < 0)
+    return;
+  console.log('begin: ' + i);
+  foo(i - 1);
+  console.log('end: ' + i);
+  console.log("why plus");
+}
+foo(3);
+// begin: 3
+// begin: 2
+// begin: 1
+// begin: 0
+// end: 0
+// end: 1
+// end: 2
+// end: 3
+```
+- - - -
+## Smallest Common Multiple & Greatest Common Divisor 
+#code/algorithm/Euclid
+The key of recursion is 
+- [ ] Find the condition where the recursion stops 
+- [ ] Return the whole function instead of a variable
+![](&&&SFLOCALFILEPATH&&&IMG_3141.JPG)
+![](&&&SFLOCALFILEPATH&&&IMG_6173.JPG)
+
+![](&&&SFLOCALFILEPATH&&&IMG_0499.JPG)
+![](&&&SFLOCALFILEPATH&&&IMG_0500.JPG)
+
+```javascript
+function gcd(x, y) {// Implements the Euclidean Algorithm
+   if (y === 0){
+       return x;
+    }
+   else{
+     return gcd(y, x%y);
+   }
+}
+
+function smallestCommons(arr) {
+  let small = Math.min(...arr);
+  let big = Math.max(...arr);
+  let newArr =[];
+  while(big >= small){
+    newArr.push(big);
+    big--;
+  }
+  console.log(newArr);
+  return newArr.reduce( (a, b) =>
+  { let GCD = gcd(a,b);
+    return a*b/GCD;
+  });
+}
+
+
+smallestCommons([1,5]);
+```
+
